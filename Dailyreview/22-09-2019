@@ -1,0 +1,177 @@
+Learned a realted paper by C. Gentry, “A fully homomorphic encryption scheme,” Doctoral dissertation, Stanford University, 2009. 
+started coding for uploading the files to the cloud.The code is as follows:-
+
+ package com.example.homo;
+
+import java.io.File;
+import java.io.IOException;
+
+import org.ksoap2.serialization.SoapObject;
+
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.StrictMode;
+import android.annotation.TargetApi;
+import android.app.Activity;
+import android.content.Intent;
+import android.util.Base64;
+import android.view.Menu;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+import static com.example.homo.FileUtils.getPath;
+
+@TargetApi(Build.VERSION_CODES.GINGERBREAD)
+public class Uploadfile extends Activity {
+	EditText e1, e2, e3;
+	Button b1, b2;
+	private static final int FILE_SELECT_CODE = 0;
+	public static byte[] bb;
+	String img_str = "Null";
+	String flname = null;
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_uploadfile);
+		try {
+			if (android.os.Build.VERSION.SDK_INT > 9) {
+				StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
+						.permitAll().build();
+				StrictMode.setThreadPolicy(policy);
+			}
+		} catch (Exception e) {
+
+		}
+
+		e2 = (EditText) findViewById(R.id.editText2);
+
+		b1 = (Button) findViewById(R.id.button1);
+		b1.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+				String ou = "";
+				SoapObject obj = new SoapObject(soapclass.NAMESPACE, "file1");
+				obj.addProperty("uid", Userhome.uid);
+				obj.addProperty("filename", e2.getText().toString());
+				obj.addProperty("filepathe", img_str);
+
+				soapclass sc = new soapclass();
+				ou = sc.Callsoap(obj, "http://tempuri.org/file1");
+
+				if (!ou.equals("") && !ou.equals("error")) {
+					Toast.makeText(getApplicationContext(), "success", 3)
+							.show();
+					Intent i = new Intent(getApplicationContext(),
+							Homeuser.class);
+					startActivity(i);
+				} else {
+					Toast.makeText(getApplicationContext(), "Failed", 3).show();
+				}
+
+			}
+		});
+
+		b2 = (Button) findViewById(R.id.button2);
+		b2.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+				try {
+					Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+					intent.setType("*/*");
+					intent.addCategory(Intent.CATEGORY_OPENABLE);
+
+					try {
+						startActivityForResult(Intent.createChooser(intent,
+								"Select a File to Upload"), FILE_SELECT_CODE);
+					} catch (android.content.ActivityNotFoundException ex) {
+						// Potentially direct the user to the Market with a
+						// Dialog
+
+						Toast.makeText(getApplicationContext(),
+								"Please install a File Manager.",
+								Toast.LENGTH_SHORT).show();
+					}
+				} catch (Exception e) {
+					Toast.makeText(getApplicationContext(), e.toString(),
+							Toast.LENGTH_SHORT).show();
+				}
+
+			}
+		});
+
+	}
+
+	@SuppressWarnings("static-access")
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+
+		// Toast.makeText(getApplicationContext(), data.toString(),
+		// Toast.LENGTH_LONG).show();
+
+		filetobyte fb = new filetobyte();
+		// do somthing...
+		Uri uri1 = data.getData();
+		// File file = new File(uri.getPath());
+		String path = "none";
+		// path = getPath(this, uri);
+		try {
+			path = getPath(this, uri1);
+			// path = getPath(this, uri1);
+
+			// File myFile = new File(uri1.getPath());
+			// path=myFile.getAbsolutePath();
+
+		} catch (Exception ae) {
+			Toast.makeText(getApplicationContext(), "Error3", Toast.LENGTH_LONG)
+					.show();
+		}
+		Toast.makeText(getApplicationContext(), path, Toast.LENGTH_LONG).show();
+
+		File file = new File(path);
+		try {
+			bb = fb.readBytesFromFile(file);
+
+		} catch (IOException e) {
+
+			e.printStackTrace();
+		}
+
+		if (path != null) {
+
+			int cut = path.lastIndexOf('/');
+			if (cut != -1) {
+				flname = path.substring(cut + 1);
+				e2.setText(flname);
+			}
+
+		}
+		try {
+			img_str = Base64.encodeToString(bb, 0);
+		} catch (Exception ae) {
+			img_str = "Null";
+		}
+		if (img_str.equals("Null")) {
+			Toast.makeText(getApplicationContext(), "Upload Failed..!",
+					Toast.LENGTH_LONG).show();
+		} else {
+		}
+
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.uploadfile, menu);
+		return true;
+	}
+
+}
