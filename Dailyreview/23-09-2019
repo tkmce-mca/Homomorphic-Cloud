@@ -1,0 +1,171 @@
+Learned a related paper by C. Gentry, “A fully homomorphic encryption scheme,” Doctoral dissertation, Stanford University, 2009. 
+started coding for downloading the files from cloud.the code is as follows:-
+
+package com.example.homo;
+
+import java.io.BufferedInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import org.ksoap2.serialization.SoapObject;
+
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Environment;
+import android.os.StrictMode;
+import android.annotation.TargetApi;
+import android.app.Activity;
+import android.view.Menu;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ListAdapter;
+import android.widget.ListView;
+import android.widget.RadioButton;
+import android.widget.SimpleAdapter;
+import android.widget.Toast;
+
+@TargetApi(Build.VERSION_CODES.GINGERBREAD)
+public class SEARCHANDDOWNLAD extends Activity {
+
+	EditText e1;
+	Button b3, b4;
+	ListView l1;
+	String file, filename;
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_searchanddownlad);
+		try {
+			if (android.os.Build.VERSION.SDK_INT > 9) {
+				StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
+						.permitAll().build();
+				StrictMode.setThreadPolicy(policy);
+			}
+		} catch (Exception e) {
+
+		}
+
+		e1 = (EditText) findViewById(R.id.editText1);
+		b3 = (Button) findViewById(R.id.button3);
+		b4 = (Button) findViewById(R.id.button2);
+		l1 = (ListView) findViewById(R.id.listView1);
+
+		b3.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+				SoapObject obj = new SoapObject(soapclass.NAMESPACE, "fileview");
+				obj.addProperty("wrd", e1.getText().toString());
+				soapclass sc = new soapclass();
+				String ou = sc.Callsoap(obj, "http://tempuri.org/fileview");
+
+				if (!ou.equals("error") && !ou.equals("")) {
+
+					ArrayList<HashMap<String, String>> allist = new ArrayList<HashMap<String, String>>();
+					String[] s1 = ou.split("@");
+					for (int i = 0; i < s1.length; i++) {
+						String[] s2 = s1[i].split("#");
+						HashMap<String, String> hmap = new HashMap<String, String>();
+						hmap.put("a", s2[0]);
+						hmap.put("b", s2[1]);
+						hmap.put("c", s2[2]);
+
+						allist.add(hmap);
+
+					}
+					ListAdapter lis = new SimpleAdapter(SEARCHANDDOWNLAD.this,
+							allist, R.layout.one, new String[] { "c", "a" },
+							new int[] { R.id.textView1, R.id.textView2 });
+					l1.setAdapter(lis);
+
+				}
+
+			}
+		});
+
+		b4.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+				startdown(file, filename);
+
+			}
+		});
+
+		l1.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
+					long arg3) {
+				// TODO Auto-generated method stub
+				HashMap<String, String> hmap = (HashMap<String, String>) arg0
+						.getItemAtPosition(arg2);
+				file = hmap.get("b");
+				filename = hmap.get("a");
+			}
+		});
+
+	}
+
+	private void startdown(String ur, String fname) {
+		String str = "File Downloaded Successfully";
+		int count;
+		try {
+			URL url = new URL(ur);
+			URLConnection conection = url.openConnection();
+			conection.connect();
+
+			String pth = Environment.getExternalStoragePublicDirectory(
+					Environment.DIRECTORY_DOWNLOADS).toString();
+			Toast.makeText(getApplicationContext(), pth, Toast.LENGTH_LONG)
+					.show();
+			InputStream input = new BufferedInputStream(url.openStream(), 8192);
+			OutputStream output = new FileOutputStream(pth + "/" + fname);
+			byte data[] = new byte[1024];
+			long total = 0;
+
+			while ((count = input.read(data)) != -1) {
+				total += count;
+				// publishProgress(""+(int)((total*100)/lenghtOfFile));
+				output.write(data, 0, count);
+			}
+			output.flush();
+			output.close();
+			input.close();
+
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			str = "URL Issue!!!";
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			str = e.toString();// "File Downloaded Failed..!!!";
+			e.printStackTrace();
+		}
+
+		Toast.makeText(getApplicationContext(), str, Toast.LENGTH_LONG).show();
+
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.searchanddownlad, menu);
+		return true;
+	}
+
+}
