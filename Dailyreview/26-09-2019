@@ -1,0 +1,13 @@
+CURRENT STATUS
+Created Webpage for file Uploading and Downloading.
+Created Database in Microsoft Sql Server for storing the data which is being uploaded.
+Made Database Connection with the webpage.
+Now learning how to encrypt and decrypt the data within the files that are uploaded.
+
+CURRENT ISSUES
+Facing difficulty in encrypting data and trying to solve
+Problem in Time management
+
+FORTHCOMING PLANS
+Data will be applied with Encryption algorithm.
+Hoping to complete the process of encryption and decryption.
