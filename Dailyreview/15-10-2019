@@ -1,0 +1,29 @@
+Done with the implementation of paillier algorithm. And my role was to decrypt the data.
+
+In this case we start with two prime numbers (p and q), and then compute n. Next we get the Lowest Common Multiplier for 
+(p-1) and (q-1), and then we get a random number g:
+
+def gcd(a,b):
+    while b > 0:
+        a, b = b, a % b
+    return a
+    
+def lcm(a, b):
+    return a * b / gcd(a, b)
+
+n = p*q
+
+gLambda = lcm(p-1,q-1)
+
+g = randint(0,100)
+
+The next two steps involve calculating the value of the L function, and then gMu, which is the inverse of l mod n
+    
+l = (pow(g, gLambda, n*n)-1)//n
+gMu = inverse_of(l, n)    
+
+core code for decryption is:
+
+l = (pow(cipher, gLambda, n*n)-1) // n
+
+mess= (l * gMu) % n
